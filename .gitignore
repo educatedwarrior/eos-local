@@ -33,3 +33,6 @@ __docs
 
 # ipfs
 services/ipfs/*
+
+# contracts
+services/eosio/contracts
