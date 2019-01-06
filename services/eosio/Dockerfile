@@ -1,22 +1,23 @@
-FROM eosio/eos:v1.4.5
+FROM ubuntu:latest
 
-RUN apt-get update && apt-get install curl -y
+RUN apt-get update && apt-get -y install curl git-core cmake make build-essential sudo
 
+# Copy files from host to image
 COPY ./ /opt/application
-# install EOS Contract Development Toolkit
+
+# Install EOS Contract Development Toolkit
 RUN apt install /opt/application/utils/eosio.cdt-1.4.1.x86_64.deb
 
-VOLUME /opt/application
+# Define working directory
 WORKDIR /opt/application
 
 ## Add the wait script to the image
 ADD ./utils/wait /wait
 RUN chmod +x /wait
 
-# used by start.sh
+# Used by start.sh
 ENV DATA_DIR /root/data-dir
 ENV CONFIG_DIR /opt/application/config
-ENV NODEOS_BIN_DIR /opt/eosio/bin
 
 ## Launch the wait tool and then start nodeos ( see docker compose, we are waiting for mongo)
 CMD /wait && /opt/application/scripts/start.sh

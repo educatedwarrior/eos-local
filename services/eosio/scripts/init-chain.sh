@@ -16,7 +16,7 @@ function create_eos_account () {
 
 # Unlocks the eoslocal wallet and waits .5 seconds
 function unlock_wallet () {
-  echo "unlocking eoslocal wallet..."
+  echo "Unlocking eoslocal wallet..."
   $cleos wallet unlock --name eoslocal --password $(cat $CONFIG_DIR/keys/eoslocal_wallet_password.txt)
   sleep .5
 }
@@ -58,12 +58,20 @@ function create_eosio_accounts () {
   create_system_account eosio.vpay $EOSIO_PUBKEY
 }
 
+function build_system_contracts () {
+  echo "Build system contracts"
+  git clone -b v1.5.1 https://github.com/EOSIO/eosio.contracts.git /opt/eosio.contracts/
+  cd /opt/eosio.contracts
+  ./build.sh
+  cd /opt/application
+}
+
 function deploy_system_contracts () {
   echo "Deploy eosio.token"
-  $cleos set contract eosio.token /contracts/eosio.token
+  $cleos set contract eosio.token /opt/eosio.contracts/build/eosio.token
 
   echo "Deploy eosio.msig"
-  $cleos set contract eosio.msig /contracts/eosio.msig
+  $cleos set contract eosio.msig /opt/eosio.contracts/build/eosio.msig
 
   echo "Create and allocate the EOS currency"
   $cleos push action eosio.token create '[ "eosio", "1000000000.0000 EOS"]' -p eosio.token@active
@@ -74,13 +82,16 @@ function deploy_system_contracts () {
   $cleos push action eosio.token issue '[ "eosio", "900000000.0000 SYS", "initial supply" ]' -p eosio@active
 
   echo "Deploy eosio.system"
-  $cleos set contract eosio /contracts/eosio.system
+  $cleos set contract eosio /opt/eosio.contracts/build/eosio.system
 
-  echo "Deploy eosio.bios"
-  $cleos set contract eosio /contracts/eosio.bios
+  # echo "Deploy eosio.bios"
+  # $cleos set contract eosio /opt/eosio.contracts/build/eosio.bios
 
   echo "Make eosio.msig privileged"
   $cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
+
+  echo "Initialize system account"
+  $cleos push action eosio init '["0", "4,SYS"]' -p eosio@active
 }
 
 
@@ -130,6 +141,7 @@ done
 # setup chain, testing users and contracts
 create_wallet
 import_private_key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3 # eosio producer key
+build_system_contracts
 create_eosio_accounts
 deploy_system_contracts
 create_testing_accounts
