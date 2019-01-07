@@ -1,6 +1,21 @@
 FROM ubuntu:latest
 
-RUN apt-get update && apt-get -y install curl git-core cmake make build-essential sudo
+# Update apps on the base image
+RUN apt-get -y update && apt-get install -y
+
+RUN apt-get -y install build-essential \
+  cmake \
+  make \
+  clang \
+  gcc \
+  g++ \
+  sudo \
+  git-core \
+  wget \
+  curl \
+  vim \
+  tmux \
+  tree
 
 # Copy files from host to image
 COPY ./ /opt/application
