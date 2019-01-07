@@ -9,10 +9,9 @@ echo "Initializing docker containers"
 docker-compose up -d eosio
 
 read -p "Initializing Chain data (y/n)? " -n 1 -r
-echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-  docker-compose run eosio /opt/application/scripts/init-chain.sh
+  docker-compose exec eosio /opt/application/scripts/init-chain.sh
 fi
 
 docker-compose up -d
